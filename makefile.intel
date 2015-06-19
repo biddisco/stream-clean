@@ -1,0 +1,9 @@
+CC=icc
+FLAGS=-O3 -openmp -march=core-avx2 -restrict
+
+stream.intel : stream.c
+	$(CC) $(FLAGS) stream.c -o stream.intel
+
+clean :
+	rm -f stream.intel
+
