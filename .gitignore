@@ -1,0 +1,7 @@
+stream.intel
+stream.gcc
+
+*.swp
+*.swo
+*.swn
+*.swq
