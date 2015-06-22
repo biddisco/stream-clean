@@ -39,18 +39,18 @@ int main(int argc, char** argv) {
     size_t array_size;
     double      times[4][ntimes];
 
-    int pow = 8;
+    int pow = 20;
     if(argc>1) {
         sscanf(argv[1], "%d", &pow);
-        if(pow<4 || pow>15) {
-            printf("error: pass an integer in the range 4:15 as argument\n");
+        if(pow<4 || pow>25) {
+            printf("error: pass an integer in the range 4:25 as argument\n");
             printf("       you passed %d\n", pow);
             exit(1);
         }
     }
     // use prime factors so that work will divide nicely
     // for any number of threads in the range [1,16]
-    const size_t n = 3*3*5*7*11*13*(1<<pow);
+    const size_t n = 3*5*(1<<pow);
 
     stream_t *a, *b, *c;
     array_size = sizeof(stream_t)*n;
