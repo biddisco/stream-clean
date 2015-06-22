@@ -136,12 +136,13 @@ int main(int argc, char** argv) {
         }
     }
 
-    printf("Function    Best Rate MB/s  Avg time     Min time     Max time\n");
+    printf("Function    Best Rate GB/s  Avg time     Min time     Max time\n");
     for (j=0; j<4; j++) {
         avgtime[j] = avgtime[j]/(double)(ntimes-1);
 
-        printf("%s%12.1f  %11.6f  %11.6f  %11.6f\n", label[j],
-           1.0E-06 * bytes[j]/mintime[j],
+        printf("%s%12.3f  %11.6f  %11.6f  %11.6f\n",
+           label[j],
+           1.0E-09 * bytes[j]/mintime[j],
            avgtime[j],
            mintime[j],
            maxtime[j]);
