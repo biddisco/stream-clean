@@ -92,28 +92,36 @@ int main(int argc, char** argv) {
     {
         times[0][k] = mysecond();
             #pragma omp parallel for
+        #ifdef USE_NONTEMPORAL
             #pragma vector nontemporal
+        #endif
             for (j=0; j<n; j++)
                 c[j] = a[j];
         times[0][k] = mysecond() - times[0][k];
 
         times[1][k] = mysecond();
             #pragma omp parallel for
+        #ifdef USE_NONTEMPORAL
             #pragma vector nontemporal
+        #endif
             for (j=0; j<n; j++)
                 b[j] = scalar*c[j];
         times[1][k] = mysecond() - times[1][k];
 
         times[2][k] = mysecond();
             #pragma omp parallel for
+        #ifdef USE_NONTEMPORAL
             #pragma vector nontemporal
+        #endif
             for (j=0; j<n; j++)
                 c[j] = a[j]+b[j];
         times[2][k] = mysecond() - times[2][k];
 
         times[3][k] = mysecond();
             #pragma omp parallel for
+        #ifdef USE_NONTEMPORAL
             #pragma vector nontemporal
+        #endif
             for (j=0; j<n; j++)
                 a[j] = b[j]+scalar*c[j];
         times[3][k] = mysecond() - times[3][k];
