@@ -73,7 +73,6 @@ int main(int argc, char** argv) {
     printf("Each kernel will be executed %d times.\n", ntimes);
     printf ("Number of Threads requested = %i\n", omp_get_max_threads());
 
-    /* Get initial value for system clock. */
     #pragma omp parallel for
     for (j=0; j<n; j++) {
         a[j] = 1.0;
@@ -127,9 +126,7 @@ int main(int argc, char** argv) {
         times[3][k] = mysecond() - times[3][k];
     }
 
-    /*  --- SUMMARY --- */
-
-    for (k=1; k<ntimes; k++) /* note -- skip first iteration */
+    for (k=1; k<ntimes; k++) // skip the first iteration
     {
         for (j=0; j<4; j++)
         {
