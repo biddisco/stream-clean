@@ -1,0 +1,9 @@
+CC=gcc
+FLAGS=-O3 -fopenmp -march=core-avx2
+
+stream.gcc : stream.c
+	$(CC) $(FLAGS) stream.c -o stream.gcc
+
+clean :
+	rm -f stream.gcc
+

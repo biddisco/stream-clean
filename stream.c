@@ -1,14 +1,8 @@
-# include <stdio.h>
-# include <unistd.h>
-# include <math.h>
-# include <float.h>
-# include <limits.h>
-# include <sys/time.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 
 #include <omp.h>
-
-//static const size_t n = 10000000;
-#define n (1<<23)
 
 double min(double x, double y) {
     return x<y ? x : y;
@@ -18,69 +12,65 @@ double max(double x, double y) {
     return x>y ? x : y;
 }
 
-
-#define STREAM_TYPE double
+typedef double stream_t;
 
 static double avgtime[4] = {0},
               maxtime[4] = {0},
-              mintime[4] = {FLT_MAX,FLT_MAX,FLT_MAX,FLT_MAX};
+              mintime[4] = {100000.,100000.,100000.,100000.};
 
-static char *label[4] = {
+static char *label[4] =
+{
     "Copy:      ",
     "Scale:     ",
     "Add:       ",
-    "Triad:     "};
+    "Triad:     "
+};
 
 double mysecond() {
     return omp_get_wtime();
 }
 
-int main() {
+int main(int argc, char** argv) {
     int         BytesPerWord;
     int         k;
     ssize_t     j;
-    STREAM_TYPE     scalar;
+    stream_t    scalar;
     const size_t ntimes = 10;
+    size_t array_size;
     double      times[4][ntimes];
 
-    // the arrays have to become local variables if we are going to 
-    STREAM_TYPE *restrict a;
-    STREAM_TYPE *restrict b;
-    STREAM_TYPE *restrict c;
+    int pow = 8;
+    if(argc>1) {
+        sscanf(argv[1], "%d", &pow);
+        if(pow<4 || pow>15) {
+            printf("error: pass an integer in the range 4:15 as argument\n");
+            printf("       you passed %d\n", pow);
+            exit(1);
+        }
+    }
+    // use prime factors so that work will divide nicely
+    // for any number of threads in the range [1,16]
+    const size_t n = 3*3*5*7*11*13*(1<<pow);
 
-    a = (STREAM_TYPE*)malloc(sizeof(STREAM_TYPE)*n);
-    b = (STREAM_TYPE*)malloc(sizeof(STREAM_TYPE)*n);
-    c = (STREAM_TYPE*)malloc(sizeof(STREAM_TYPE)*n);
+    stream_t *a, *b, *c;
+    array_size = sizeof(stream_t)*n;
+    posix_memalign((void**)&a, 64, array_size);
+    posix_memalign((void**)&b, 64, array_size);
+    posix_memalign((void**)&c, 64, array_size);
 
     double bytes[4];
-    bytes[0] = 2 * sizeof(STREAM_TYPE) * n;
-    bytes[1] = 2 * sizeof(STREAM_TYPE) * n;
-    bytes[2] = 3 * sizeof(STREAM_TYPE) * n;
-    bytes[3] = 3 * sizeof(STREAM_TYPE) * n;
-
-    /* --- SETUP --- determine precision and check timing --- */
+    bytes[0] = 2 * array_size;
+    bytes[1] = 2 * array_size;
+    bytes[2] = 3 * array_size;
+    bytes[3] = 3 * array_size;
 
     printf("------------------------------------\n");
-    printf("STREAM version $Revision: 5.10 $\n");
-    printf("------------------------------------\n");
-    BytesPerWord = sizeof(STREAM_TYPE);
-    printf("This system uses %d bytes per array element.\n",
-    BytesPerWord);
-
-    printf("------------------------------------\n");
-
-    printf("Array size = %llu (elements), Offset = (elements)\n" , (unsigned long long) n);
+    BytesPerWord = sizeof(stream_t);
+    printf("Array size = %llu (elements).\n" , (unsigned long long) n);
     printf("Memory per array = %.1f MiB (= %.1f GiB).\n", 
     BytesPerWord * ( (double) n / 1024.0/1024.0),
     BytesPerWord * ( (double) n / 1024.0/1024.0/1024.0));
-    printf("Total memory required = %.1f MiB (= %.1f GiB).\n",
-    (3.0 * BytesPerWord) * ( (double) n / 1024.0/1024.),
-    (3.0 * BytesPerWord) * ( (double) n / 1024.0/1024./1024.));
     printf("Each kernel will be executed %d times.\n", ntimes);
-    printf(" The *best* time for each kernel (excluding the first iteration)\n"); 
-    printf(" will be used to compute the reported bandwidth.\n");
-
-    printf("------------------------------------\n");
     printf ("Number of Threads requested = %i\n", omp_get_max_threads());
 
     /* Get initial value for system clock. */
@@ -102,24 +92,28 @@ int main() {
     {
         times[0][k] = mysecond();
             #pragma omp parallel for
+            #pragma vector nontemporal
             for (j=0; j<n; j++)
                 c[j] = a[j];
         times[0][k] = mysecond() - times[0][k];
 
         times[1][k] = mysecond();
             #pragma omp parallel for
+            #pragma vector nontemporal
             for (j=0; j<n; j++)
                 b[j] = scalar*c[j];
         times[1][k] = mysecond() - times[1][k];
 
         times[2][k] = mysecond();
             #pragma omp parallel for
+            #pragma vector nontemporal
             for (j=0; j<n; j++)
                 c[j] = a[j]+b[j];
         times[2][k] = mysecond() - times[2][k];
 
         times[3][k] = mysecond();
             #pragma omp parallel for
+            #pragma vector nontemporal
             for (j=0; j<n; j++)
                 a[j] = b[j]+scalar*c[j];
         times[3][k] = mysecond() - times[3][k];
