@@ -89,8 +89,12 @@ int main(int argc, char** argv) {
     scalar = 3.0;
     for (k=0; k<ntimes; k++)
     {
+        // using #pragma simd forces the intel compiler to
+        // not optmize with a fast_memcpy, which is useful
+        // if we want to understand "real application" performance
         times[0][k] = mysecond();
             #pragma omp parallel for
+            #pragma simd
         #ifdef USE_NONTEMPORAL
             #pragma vector nontemporal
         #endif
@@ -100,6 +104,7 @@ int main(int argc, char** argv) {
 
         times[1][k] = mysecond();
             #pragma omp parallel for
+            #pragma simd
         #ifdef USE_NONTEMPORAL
             #pragma vector nontemporal
         #endif
@@ -109,6 +114,7 @@ int main(int argc, char** argv) {
 
         times[2][k] = mysecond();
             #pragma omp parallel for
+            #pragma simd
         #ifdef USE_NONTEMPORAL
             #pragma vector nontemporal
         #endif
@@ -118,6 +124,7 @@ int main(int argc, char** argv) {
 
         times[3][k] = mysecond();
             #pragma omp parallel for
+            #pragma simd
         #ifdef USE_NONTEMPORAL
             #pragma vector nontemporal
         #endif

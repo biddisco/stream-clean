@@ -1,8 +1,8 @@
 CC=gcc
 FLAGS=-O3 -fopenmp
 
-#FLAGS+=--march=core-avx2
-FLAGS+=-mavx
+FLAGS+=-march=core-avx2
+#FLAGS+=-mavx
 
 stream.gcc : stream.c
 	$(CC) $(FLAGS) stream.c -o stream.gcc
