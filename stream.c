@@ -48,8 +48,7 @@ int main(int argc, char** argv) {
             exit(1);
         }
     }
-    // use prime factors so that work will divide nicely
-    // for any number of threads in the range [1,16]
+    // use prime factors so that work will divide better
     const size_t n = 3*5*(1<<pow);
 
     stream_t *a, *b, *c;
