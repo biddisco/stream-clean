@@ -1,5 +1,7 @@
 stream.intel
 stream.gcc
+stream.papi
+a.out
 
 *.swp
 *.swo

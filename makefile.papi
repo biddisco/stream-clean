@@ -1,0 +1,17 @@
+CC=icc
+FLAGS=-O3 -openmp
+
+FLAGS+=-march=core-avx2
+FLAGS+=-DUSE_NONTEMPORAL
+
+PAPI_PATH=/users/bcumming/repos/lib
+PAPI_WRAP_PATH=/users/bcumming/repos/papi-wrap/
+LINK=-I$(PAPI_WRAP_PATH) -L$(PAPI_PATH)/lib -L$(PAPI_WRAP_PATH)/lib
+LINK+= -lpapi_wrap -lpapi -lpfm
+
+stream.papi : stream_papi.c
+	$(CC) $(FLAGS) stream_papi.c -o stream.papi $(LINK)
+
+clean :
+	rm -f stream.intel
+
