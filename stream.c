@@ -2,7 +2,25 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include <omp.h>
+#ifndef STREAM_DISABLE_OPENMP
+# include <omp.h>
+#else
+# include <chrono>
+# include <iostream>
+  // static global time point initialized on startup
+  auto startup = std::chrono::high_resolution_clock::now();
+
+  // elapsed time since startup
+  double omp_get_wtime(void) {
+    auto now = std::chrono::high_resolution_clock::now();
+    double d = std::chrono::duration_cast<std::chrono::microseconds>(now-startup).count();
+    return d/1E6;
+  }
+
+  int omp_get_max_threads(void) {
+    return 1;
+  }
+#endif
 
 double min(double x, double y) {
     return x<y ? x : y;
@@ -18,7 +36,7 @@ static double avgtime[4] = {0},
               maxtime[4] = {0},
               mintime[4] = {100000.,100000.,100000.,100000.};
 
-static char *label[4] =
+static const char *label[4] =
 {
     "Copy:      ",
     "Scale:     ",
@@ -69,7 +87,7 @@ int main(int argc, char** argv) {
     printf("Memory per array = %.1f MiB (= %.1f GiB).\n", 
     BytesPerWord * ( (double) n / 1024.0/1024.0),
     BytesPerWord * ( (double) n / 1024.0/1024.0/1024.0));
-    printf("Each kernel will be executed %d times.\n", ntimes);
+    printf("Each kernel will be executed %zd times.\n", ntimes);
     printf ("Number of Threads requested = %i\n", omp_get_max_threads());
 
     #pragma omp parallel for
